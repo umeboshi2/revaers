@@ -13,6 +13,9 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'hornstone',
+    'pandas',
+    'plotly',
+    'us',
     ]
 
 setup_requirements = ['pytest-runner', ]

@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime
-from .models import Data
-
+from .models import Data, VaxData
+import collections
 
 def get_zip_file(year):
     filename = "{}VAERSData.zip".format(year)
@@ -35,6 +35,17 @@ int_fields = [
     ]
 
 
+vax_fields = [
+    'vax_type',
+    'vax_manu',
+    'vax_lot',
+    'vax_dose_series',
+    'vax_route',
+    'vax_site',
+    'vax_name',
+    ]
+
+
 def make_row_data(row):
     data = Data()
     data.vaers_id = int(row['VAERS_ID'])
@@ -65,9 +76,16 @@ def make_row_data(row):
                 data.questionable = True
     return data
 
+def make_vax_data(row):
+    data = VaxData()
+    data.vaers_id = int(row['VAERS_ID'])
+    for field in vax_fields:
+        text = row[field.upper()].strip()
+        setattr(data, field, text)
+    return data
+
 def parse_csvfile(csvfile, session):
     reader = csv.DictReader(csvfile)
-    rows = list()
     for row in reader:
         vaers_id = int(row['VAERS_ID'])
         data = session.query(Data).get(vaers_id)
@@ -76,10 +94,23 @@ def parse_csvfile(csvfile, session):
             session.add(data)
             session.commit()
 
-        if row['DATEDIED']:
-            print(row['DATEDIED'], row['VAX_DATE'])
-            rows.append(row)
-    
+
+def parse_vaxfile(csvfile, session):
+    reader = csv.DictReader(csvfile)
+    rows = list()
+    manudict = collections.defaultdict(int)
+    for row in reader:
+        # breakpoint()
+        vaers_id = int(row['VAERS_ID'])
+        data = session.query(VaxData).get(vaers_id)
+        if data is None:
+            data = make_vax_data(row)
+            session.add(data)
+            session.commit()
+            print("added vax data {}: {}".format(data.vaers_id, data.vax_manu))
+        manudict[data.vax_manu] += 1
+    print("Vax MANU", manudict)
+        
 
 
 def parse_csv(filename, session):

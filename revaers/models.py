@@ -6,7 +6,7 @@ from sqlalchemy import (
     Boolean,
     ForeignKey,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from hornstone.alchemy import Base, SerialBase
 
 data_csv_fieldnames = [
@@ -64,5 +64,19 @@ class MiscData(Base, SerialBase):
     vaers_id = Column(Integer, ForeignKey('vaers_data.vaers_id'),
                       primary_key=True)
 
+class VaxData(Base, SerialBase):
+    __tablename__ = 'vaers_vax_data'
+    vaers_id = Column(Integer, ForeignKey('vaers_data.vaers_id'),
+                      primary_key=True)
+    vax_type = Column(Unicode)
+    vax_manu = Column(Unicode)
+    vax_lot = Column(Unicode)
+    vax_dose_series = Column(Unicode)
+    vax_route = Column(Unicode)
+    vax_site = Column(Unicode)
+    vax_name = Column(Unicode)
 
+    
+Data.vax = relationship(VaxData, backref=backref('data', uselist=False),
+                        uselist=False)
 

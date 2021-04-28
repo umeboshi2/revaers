@@ -15,8 +15,10 @@ import numpy as np
 import plotly.io as pio
 import plotly.express as px
 import pandas as pd
+import matplotlib.pyplot as plt
 # import cufflinks
 
+plt.style.use('dark_background')
 
 
 data_csv_fieldnames = [
@@ -101,11 +103,16 @@ def get_death_times(session):
     return days
 
 
-query = s.query(Data).join(VaxData)
 
 
 
-df = pd.read_sql(query.statement, query.session.bind)
+def make_data_frame(query):
+    return pd.read_sql(query.statement, query.session.bind)
+
+query = s.query(Data, VaxData).join(VaxData)
+query = query.filter(VaxData.vax_type == 'COVID19')
+
+df = make_data_frame(query)
 
 
 # events 34187

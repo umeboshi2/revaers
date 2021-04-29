@@ -20,7 +20,13 @@ revaers
 
 
 
-work with vaers csv files
+This is a simple package to work with vaers csv files.  This has only
+been setup to work on a Postgresql database.  The code basically just creates
+tables for the data, and vax csv files, and can update those tables with future
+csv updates.
+
+For now, the code is best used in a jupyter notebook.
+
 
 
 * Free software: UNLICENSED

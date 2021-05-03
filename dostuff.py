@@ -1,7 +1,7 @@
 import os
 import io
 import zipfile
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from hornstone.alchemy import Base
@@ -59,13 +59,12 @@ all_csv_dates = [
     (4, 9),
     (4, 16),
     (4, 23),
+    (4, 30),
     ]
 
 csv_dates = [
-    (4, 2),
-    (4, 9),
-    (4, 16),
     (4, 23),
+    (4, 30),
     ]
     
 
@@ -128,5 +127,14 @@ df = make_data_frame(query)
 # pre-update 4-23
 # events 57774
 # deaths 2526
+
+
+# pre-update 4-30
+# events 75517
+# deaths 3117
+
+# events 108361
+# deaths 3484
+
 
 

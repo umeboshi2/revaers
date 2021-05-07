@@ -60,11 +60,13 @@ all_csv_dates = [
     (4, 16),
     (4, 23),
     (4, 30),
+    (5, 7),
     ]
 
 csv_dates = [
     (4, 23),
     (4, 30),
+    (5, 7),
     ]
     
 
@@ -133,6 +135,7 @@ df = make_data_frame(query)
 # events 75517
 # deaths 3117
 
+# pre-update 5-7
 # events 108361
 # deaths 3484
 

@@ -58,6 +58,7 @@ class Data(Base, SerialBase):
     bad_dates = Column(Boolean, default=False)
     # True when datedied - vax_date > 360
     questionable = Column(Boolean, default=False)
+    csvdate = Column(Date)
 
 class MiscData(Base, SerialBase):
     __tablename__ = 'vaers_misc_data'

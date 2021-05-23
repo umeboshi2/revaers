@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, date
 from .models import Data, VaxData
 import collections
 
@@ -46,7 +46,7 @@ vax_fields = [
     ]
 
 
-def make_row_data(row):
+def make_row_data(row, csvdate):
     data = Data()
     data.vaers_id = int(row['VAERS_ID'])
     for field in text_fields:
@@ -62,6 +62,7 @@ def make_row_data(row):
             value = datetime.strptime(text, '%m/%d/%Y').date()
             setattr(data, field, value)
     data.died = False
+    data.csvdate = csvdate
     died = row['DIED'].strip()
     if died and died == 'Y':
         data.died = True
@@ -84,13 +85,16 @@ def make_vax_data(row):
         setattr(data, field, text)
     return data
 
-def parse_csvfile(csvfile, session):
+def parse_csvfile(csvfile, csvdate, session):
     reader = csv.DictReader(csvfile)
+    early_date = date(2020, 5, 7)
     for row in reader:
         vaers_id = int(row['VAERS_ID'])
         data = session.query(Data).get(vaers_id)
         if data is None:
-            data = make_row_data(row)
+            data = make_row_data(row, csvdate)
+            if data.recvdate < early_date:
+                print("old event", data.vaers_id, data.recvdate)
             session.add(data)
             session.commit()
 

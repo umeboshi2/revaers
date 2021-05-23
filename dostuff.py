@@ -1,6 +1,8 @@
 import os
 import io
 import zipfile
+import datetime
+
 from sqlalchemy import engine_from_config, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -61,12 +63,13 @@ all_csv_dates = [
     (4, 23),
     (4, 30),
     (5, 7),
+    (5, 14),
+    (5, 21),
     ]
 
 csv_dates = [
-    (4, 23),
-    (4, 30),
-    (5, 7),
+    (5, 14),
+    (5, 21),
     ]
     
 
@@ -78,6 +81,7 @@ s = Session()
 def get_csv_files(dates=csv_dates, root=csv_directory):
     for month, day in dates:
         filename = get_zip_file(2021, month, day)
+        csvdate = datetime.date(2021, month, day)
         filename = os.path.join(csv_directory, get_zip_file(2021, month, day))
         # print(filename, os.path.isfile(filename))
         with zipfile.ZipFile(filename) as zfile:
@@ -85,7 +89,7 @@ def get_csv_files(dates=csv_dates, root=csv_directory):
             print(zfile, zfile.filelist)
             with io.TextIOWrapper(zfile.open('2021VAERSDATA.csv'),
                                   errors='replace') as csvfile:
-                parse_csvfile(csvfile, s)
+                parse_csvfile(csvfile, csvdate, s)
             with io.TextIOWrapper(zfile.open('2021VAERSVAX.csv'),
                                   errors='replace') as csvfile:
                 print("parsing vaxfile", month, day)
@@ -139,5 +143,14 @@ df = make_data_frame(query)
 # events 108361
 # deaths 3484
 
+# pre-update 5-14
+# 5-7 update goes back to 4-30
+# events 146853
+# deaths 3806
+
+# pre-update 5-21
+# 5-7 update goes back to 5-14
+# events 182869
+# deaths 4108
 
 

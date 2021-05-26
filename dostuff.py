@@ -2,6 +2,7 @@ import os
 import io
 import zipfile
 import datetime
+from datetime import timedelta, date
 
 from sqlalchemy import engine_from_config, func
 from sqlalchemy.orm import sessionmaker
@@ -19,8 +20,15 @@ import plotly.express as px
 import pandas as pd
 import matplotlib.pyplot as plt
 # import cufflinks
+import matplotlib.animation as animation
+import matplotlib
 
 plt.style.use('dark_background')
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+
+one_day = timedelta(days=1)
+today = date.today()
 
 
 data_csv_fieldnames = [
@@ -114,11 +122,63 @@ def get_death_times(session):
 def make_data_frame(query):
     return pd.read_sql(query.statement, query.session.bind)
 
-query = s.query(Data, VaxData).join(VaxData)
-query = query.filter(VaxData.vax_type == 'COVID19')
 
-df = make_data_frame(query)
+# query = s.query(Data, VaxData).join(VaxData)
+# query = query.filter(VaxData.vax_type == 'COVID19')
 
+def make_cvquery(session, enddate):
+    query = session.query(Data, VaxData).join(VaxData)
+    query = query.filter(VaxData.vax_type == 'COVID19')
+    query = query.filter(Data.recvdate <= enddate)
+    return query
+
+def get_vax_manus(session, enddate):
+    query = make_cvquery(session, enddate)
+    query = query.distinct(VaxData.vax_manu).group_by(VaxData.vax_manu,
+                                                      Data.vaers_id,
+                                                      VaxData.vaers_id)
+    return [r.VaxData.vax_manu for r in query]
+
+
+def get_vtype_counts(session, enddate):
+    vtypes = get_vax_manus(session, enddate)
+    counts = dict()
+    for manu in vtypes:
+        query = make_cvquery(session, enddate)
+        query = query.filter(VaxData.vax_manu == manu)
+        counts[manu] = query.count()
+    return counts
+
+
+
+enddate = date(2021, 1, 1)
+
+fig, ax = plt.subplots()
+#fig = plt.figure()
+frames = list()
+index_date = enddate
+fcount = 1
+while index_date <= today:
+    counts = get_vtype_counts(s, index_date)
+    k, v = counts.keys(), counts.values()
+    #ax = matplotlib.axes.Axes(fig, fig.patch)
+    #px = plt.bar(counts.keys(), counts.values(), title=index_date)
+    #.title(index_date)
+    ax.set_title(index_date)
+    px = ax.bar(k, v)
+    print(counts)
+    frames.append(px)
+    index_date += one_day
+    fcount += 1
+    
+ani = animation.ArtistAnimation(fig, frames, interval=50, repeat_delay=2000)
+ani.save('bars.mp4', writer=writer)
+
+# df = make_data_frame(query)
+
+#im_ani = animation.ArtistAnimation(fig2, ims, interval=50, repeat_delay=3000,
+#                                   blit=True)
+#im_ani.save('im.mp4', writer=writer)
 
 # events 34187
 # deaths 1974

@@ -13,6 +13,7 @@ from revaers.models import Data, VaxData
 from revaers.parser import parse_csv
 from revaers.parser import parse_csvfile
 from revaers.parser import parse_vaxfile
+from revaers.query import get_vax_manus, base_cvquery, cvreports_until
 
 import numpy as np
 import plotly.io as pio
@@ -126,53 +127,38 @@ def make_data_frame(query):
 # query = s.query(Data, VaxData).join(VaxData)
 # query = query.filter(VaxData.vax_type == 'COVID19')
 
-def make_cvquery(session, enddate):
-    query = session.query(Data, VaxData).join(VaxData)
-    query = query.filter(VaxData.vax_type == 'COVID19')
-    query = query.filter(Data.recvdate <= enddate)
-    return query
-
-def get_vax_manus(session, enddate):
-    query = make_cvquery(session, enddate)
-    query = query.distinct(VaxData.vax_manu).group_by(VaxData.vax_manu,
-                                                      Data.vaers_id,
-                                                      VaxData.vaers_id)
-    return [r.VaxData.vax_manu for r in query]
-
 
 def get_vtype_counts(session, enddate):
     vtypes = get_vax_manus(session, enddate)
     counts = dict()
     for manu in vtypes:
-        query = make_cvquery(session, enddate)
+        query = cvreports_until(session, enddate)
         query = query.filter(VaxData.vax_manu == manu)
+        query = query.filter(Data.died == True)
         counts[manu] = query.count()
     return counts
 
+start_date = date(2021, 1, 1)
+last_report_date = s.query(func.max(Data.recvdate)).one()[0]
+
+def make_video(end_date=last_report_date, start_date=start_date,
+               filename='bars.mp4'):
+    index_date = start_date
+    frames = list()
+    fig = plt.figure()
+    while index_date <= end_date:
+        counts = get_vtype_counts(s, index_date)
+        k, v = counts.keys(), counts.values()
+        ax = plt.gca()
+        px = ax.bar(k, v, log=False)
+        print(index_date, counts)
+        frames.append(px)
+        index_date += one_day
+    ani = animation.ArtistAnimation(fig, frames, interval=50, repeat_delay=2000)
+    ani.save(filename, writer=writer)
+        
 
 
-enddate = date(2021, 1, 1)
-
-fig, ax = plt.subplots()
-#fig = plt.figure()
-frames = list()
-index_date = enddate
-fcount = 1
-while index_date <= today:
-    counts = get_vtype_counts(s, index_date)
-    k, v = counts.keys(), counts.values()
-    #ax = matplotlib.axes.Axes(fig, fig.patch)
-    #px = plt.bar(counts.keys(), counts.values(), title=index_date)
-    #.title(index_date)
-    ax.set_title(index_date)
-    px = ax.bar(k, v)
-    print(counts)
-    frames.append(px)
-    index_date += one_day
-    fcount += 1
-    
-ani = animation.ArtistAnimation(fig, frames, interval=50, repeat_delay=2000)
-ani.save('bars.mp4', writer=writer)
 
 # df = make_data_frame(query)
 

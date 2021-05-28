@@ -4,7 +4,7 @@ import zipfile
 import datetime
 from datetime import timedelta, date
 
-from sqlalchemy import engine_from_config, func
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from hornstone.alchemy import Base
@@ -53,8 +53,7 @@ def get_zip_file(year=2021, month=None, day=None):
 
 
 dburl = 'postgresql+psycopg2://dbadmin@localhost/revaers'
-settings = {'sqlalchemy.url': dburl}
-engine = engine_from_config(settings)
+engine = create_engine(dburl)
 Base.metadata.create_all(engine)
 Session = sessionmaker()
 Session.configure(bind=engine)
@@ -134,7 +133,8 @@ def get_vtype_counts(session, enddate):
     for manu in vtypes:
         query = cvreports_until(session, enddate)
         query = query.filter(VaxData.vax_manu == manu)
-        query = query.filter(Data.died == True)
+        # query = query.filter(Data.state == 'MS')
+        # query = query.filter(Data.died == True)
         counts[manu] = query.count()
     return counts
 

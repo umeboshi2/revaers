@@ -20,3 +20,9 @@ def get_vax_manus(session, end_date):
     return [r.VaxData.vax_manu for r in query]
 
 
+def search_symptoms_like(session, text):
+    query = base_cvquery(session)
+    query = query.filter(Data.symptom_text.ilike('%{}%'.format(text)))
+    return query
+
+                         

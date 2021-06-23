@@ -14,6 +14,7 @@ from revaers.parser import parse_csv
 from revaers.parser import parse_csvfile
 from revaers.parser import parse_vaxfile
 from revaers.query import get_vax_manus, base_cvquery, cvreports_until
+from revaers.query import search_symptoms_like
 
 import numpy as np
 import plotly.io as pio
@@ -73,12 +74,12 @@ all_csv_dates = [
     (5, 7),
     (5, 14),
     (5, 21),
-    (5, 28),
+    (6, 4),
     ]
 
 csv_dates = [
-    (5, 21),
     (5, 28),
+    (6, 4),
     ]
     
 

@@ -60,6 +60,12 @@ class Data(Base, SerialBase):
     questionable = Column(Boolean, default=False)
     csvdate = Column(Date)
 
+    def __repr__(self):
+        d = "<<Vaers({}): {} {} {}>>"
+        return d.format(self.vaers_id, self.age_yrs, self.sex,
+                        self.symptom_text)
+
+
 class MiscData(Base, SerialBase):
     __tablename__ = 'vaers_misc_data'
     vaers_id = Column(Integer, ForeignKey('vaers_data.vaers_id'),

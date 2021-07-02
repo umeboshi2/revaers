@@ -16,6 +16,8 @@ from revaers.parser import parse_vaxfile
 from revaers.query import get_vax_manus, base_cvquery, cvreports_until
 from revaers.query import search_symptoms_like
 from revaers.query import csv_update_backlog, get_csvdates
+from revaers.query import events_by_days_until_death
+
 
 import numpy as np
 import plotly.io as pio
@@ -78,10 +80,12 @@ all_csv_dates = [
     (6, 4),
     (6, 11),
     (6, 18),
+    (6, 25),
+    (7, 2),
     ]
 
 csv_dates = [
-    (6, 18),
+    (7, 2),
     ]
     
 

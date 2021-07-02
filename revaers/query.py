@@ -38,3 +38,12 @@ def csv_update_backlog(session, csvdate):
 def get_csvdates(session):
     query = session.query(Data).distinct(Data.csvdate).order_by(Data.csvdate)
     return [row.csvdate for row in query]
+
+
+def events_by_days_until_death(session):
+    q = session.query(func.count(Data.vaers_id),
+                      (Data.datedied - Data.vax_date).label('days'))
+    q = q.filter(Data.died == True)
+    q = q.filter(Data.datedied - Data.vax_date >= 0)
+    q = q.group_by('days')
+    return q
